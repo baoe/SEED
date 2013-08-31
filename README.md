@@ -53,4 +53,4 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
    |0                            |Sequence  ID from input file |0                            |
    |Center sequence for cluster 1|                             |                             |
    |1                            |Sequence  ID from input file |1                            |
-   |01                           |Sequence  ID from input file |0                            |
+   |1                            |Sequence  ID from input file |0                            |
