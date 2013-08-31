@@ -1,6 +1,8 @@
 ##### Contents
 [Overview] (#overview)
+
 [How to cite SEED?] (#cite)
+
 [Short Manual] (#manual)
 
 <a name="overview"/>
