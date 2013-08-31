@@ -4,10 +4,10 @@
 [Short Manual] (#manual)
 
 <a name="overview"/>
-## Overview
+### Overview
 
 <a name="cite"/>
-## How to cite SEED?
+### How to cite SEED?
 
 <a name="manual"/>
-## Short manual
+### Short manual
