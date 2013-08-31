@@ -46,7 +46,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
 
    SEED outputs two files: a SEED file and a FASTQ file. The outputted FASTQ file has the same format as the input FASTQ file, but it contains only the center sequences and their quality scores for each cluster with one or more members. In other words, it is the filtered version of the input FASTQ file where the redundant sequences have been removed. The SEED file has a tabular format that is explained in the following table. The third column in this table is only available if the --reverse argument has been specified.
 
-   |Cluster ID                   |Sequence ID                  | Is Reversed|
+   |Cluster ID                   |Sequence ID                  | Is Reversed                 |
    |:----------------------------|:----------------------------|:----------------------------|
    |Center sequence for cluster 0|                             |                             |
    |0                            |Sequence  ID from input file |1                            |
