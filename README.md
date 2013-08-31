@@ -21,7 +21,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
 2. Installation
 
    The downloaded .cpp file can be compiled as follows:  
-   * On Mac/UNIX/Linux systems, execute on the command line: 'g++ -o SEED SEED.cpp'
+   * On Mac/UNIX/Linux systems, execute on the command line: `g++ -o SEED SEED.cpp`
    * On Windows systems, the code can be compiled under the Visual C++ environment.
 
 3. Input
