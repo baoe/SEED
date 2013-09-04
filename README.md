@@ -1,6 +1,6 @@
 ##### Contents
 [Overview] (#overview)  
-[Copy right] (#copyright)
+[Copy right] (#copyright)  
 [How to cite SEED?] (#cite)  
 [Short Manual] (#manual)  
 
