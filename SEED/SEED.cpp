@@ -1940,7 +1940,7 @@ int main(int argc, char * argv[])
 	cout << " - " << num << " seqs with lengths between " << lower << " and " << upper << endl;
 	if(num == 0 || lower < 36 && seedsWeight == 1024 * 16 || lower < 58 && seedsWeight == 1024 * 64 || lower < 21 && seedsWeight == 4  || upper > 200 || upper - lower > 5)
 	{
-		cout << "INVALID INPUT FILE!" << endl;
+		cout << "INVALID INPUT FILE. VALID FILE SHOULD HAVE READS OF LENGTH 21-200 WITH MAX VARIATION 5!" << endl;
 		return 0;
 	}
 
