@@ -1,11 +1,16 @@
 ##### Contents
 [Overview] (#overview)  
+[Copy right] (#copyright)  
 [How to cite SEED?] (#cite)  
 [Short Manual] (#manual)  
 
 <a name="overview"/>
 ### Overview
 SEED is a software for clustering large sets of Next Generation Sequences (NGS) with hundreds of millions of reads in a time and memory efficient manner. Its algorithm joins highly similar sequences into clusters that can differ by up to three mismatches and three overhanging residues.
+
+<a name="copyright"/>
+###Copy right
+SEED is under the [Artistic License 2.0](http://opensource.org/licenses/Artistic-2.0).
 
 <a name="cite"/>
 ### How to cite SEED?
@@ -21,7 +26,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
 2. Installation
 
    The downloaded .cpp file can be compiled as follows:  
-   * On Mac/UNIX/Linux systems, execute on the command line: g++ -o SEED SEED.cpp
+   * On Mac/UNIX/Linux systems, execute on the command line: `g++ -o SEED SEED.cpp`
    * On Windows systems, the code can be compiled under the Visual C++ environment.
 
 3. Input
@@ -53,4 +58,4 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
    |0                            |Sequence  ID from input file |0                            |
    |Center sequence for cluster 1|                             |                             |
    |1                            |Sequence  ID from input file |1                            |
-   |01                           |Sequence  ID from input file |0                            |
+   |1                            |Sequence  ID from input file |0                            |
