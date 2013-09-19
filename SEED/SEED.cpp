@@ -1243,10 +1243,10 @@ void FileAnalyzer::inputAnalyze(char input[], int & num, int & tNum, int & lower
 {
 	ifstream in;
 	int seqID = 0, i;
-	char buf[201];
+	char buf[1001];
 
 	num = upper = 0;
-	lower = 200;
+	lower = 1000;
 	in.open(input);
 
 	if(in.is_open())
@@ -1254,7 +1254,7 @@ void FileAnalyzer::inputAnalyze(char input[], int & num, int & tNum, int & lower
 //cont:
 		while(in.good())
 		{
-			in.getline(buf, 201);
+			in.getline(buf, 1001);
 			if(seqID % 4 == 1)
 			{
 //				for(i = 0; i < in.gcount() - 1; i ++)
@@ -1284,7 +1284,7 @@ void FileAnalyzer::inputAnalyze(char input[], int & num, int & tNum, int & lower
 conti:
 		while(in.good())
 		{
-			in.getline(buf, 201);
+			in.getline(buf, 1001);
 			if(seqID % 4 == 1)
 			{
 				for(i = 0; i < lower; i ++)
@@ -1938,9 +1938,35 @@ int main(int argc, char * argv[])
 	cout << "(1) input analysis finished" << endl;
 
 	cout << " - " << num << " seqs with lengths between " << lower << " and " << upper << endl;
-	if(num == 0 || lower < 36 && seedsWeight == 1024 * 16 || lower < 58 && seedsWeight == 1024 * 64 || lower < 21 && seedsWeight == 4  || upper > 200 || upper - lower > 5)
+
+	if(num == 0)
 	{
-		cout << "INVALID INPUT FILE!" << endl;
+		cout << "INVALID FILE FORMAT!" << endl;
+		return 0;
+	}
+	if(lower < 36 && seedsWeight == 1024 * 16)
+	{
+		cout << "INVALID READ LENGTH (BELOW 36) IN ORDINARY MODE!" << endl;
+		return 0;
+	}
+	if(lower < 58 && seedsWeight == 1024 * 64)
+	{
+		cout << "INVALID READ LENGTH (BELOW 58) IN FAST MODE!" << endl;
+		return 0;
+	}
+	if(lower < 21 && seedsWeight == 4)
+	{
+		cout << "INVALID READ LENGTH (BELOW 21) IN SHORT MODE!" << endl;
+		return 0;
+	}
+	if(upper > 200)
+	{
+		cout << "INVALID READ LENGTH (ABOVE 200)!" << endl;
+		return 0;
+	}
+	if(upper - lower > 5)
+	{
+		cout << "INVALID READ LENGTH DIFFERENCE (ABOVE 5)!" << endl;
 		return 0;
 	}
 
