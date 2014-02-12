@@ -222,7 +222,7 @@ Hash::Hash(char input[], int num, int lowerSizeInChar, int upperSizeInChar)
 
 void Hash::build()
 {
-	char buf[201];
+	char buf[1001];
 	int i, count = 0, tag = 1;
 	unsigned int seqOffset = 0, seqID;
 
@@ -238,7 +238,7 @@ void Hash::build()
 cont:
 		while(seqID < num * 4)
 		{
-			in.getline(buf, 201);
+			in.getline(buf, 1001);
 			if(seqID % 4 == 1)
 			{
 				for(i = 0; i < in.gcount() - 1; i ++)
@@ -269,7 +269,7 @@ cont:
 						QVInsert(buf, in.gcount(), seqHead, seqOffset);//for the last line in Windows OS
 					seqOffset = seqOffset + upperSizeInChar;
 				}
-				for(i = 0; i < 201; i ++)
+				for(i = 0; i < 1001; i ++)
 					buf[i] = 0;
 			}
 			seqID ++;
@@ -704,9 +704,9 @@ char Cluster::max(int a, int b, int c, int d)
 
 void Cluster::calConsensus(char sBuf[], unsigned int sSeqID, int & tagReverse)
 {
-	long int A[200] = {0}, C[200] = {0}, G[200] = {0}, T[200] = {0};
-	int indexNext, no, i, realSize, similarity = 200, diff, j;
-	char sBufBak[200], tBuf[200], buf[200];
+	long int A[1000] = {0}, C[1000] = {0}, G[1000] = {0}, T[1000] = {0};
+	int indexNext, no, i, realSize, similarity = 1000, diff, j;
+	char sBufBak[1000], tBuf[1000], buf[1000];
 	unsigned int indexOffset;
 	unsigned int seqID, centerSeqID;
 
@@ -797,10 +797,10 @@ void Cluster::calConsensus(char sBuf[], unsigned int sSeqID, int & tagReverse)
 
 void Cluster::cluster()
 {
-	char sBuf[200];
+	char sBuf[1000];
 	int realSize, tagReverse, i;
 	unsigned int seqOffset;
-	char sQVBuf[200];
+	char sQVBuf[1000];
 	unsigned int seqID;
 //	long int big = 0, small = 0;
 
@@ -887,7 +887,7 @@ void Cluster::cluster()
 
 void Cluster::clusterWithMismatches(char sBuf[])
 {
-	char tBuf[200];
+	char tBuf[1000];
 	int indexNext, no, realSize, tagReverse, i;
 	unsigned int indexOffset;
 	unsigned int seqID;
@@ -922,7 +922,7 @@ void Cluster::clusterWithMismatches(char sBuf[])
 
 void Cluster::clusterWithShifts(char sBuf[])
 {
-	char tBuf[200], buf[200];
+	char tBuf[1000], buf[1000];
 	int no, i, lShift, rShift, realSize, indexNext, tagReverse;
 	unsigned int indexOffset;
 	unsigned int seqID;
@@ -1034,7 +1034,7 @@ char Cluster::reverseChange(char base)
 
 void Cluster::clusterWithMismatches(char sBuf[], char sQVBuf[])
 {
-	char tBuf[200], tQVBuf[200];
+	char tBuf[1000], tQVBuf[1000];
 	int indexNext, no, realSize, tagReverse, i;
 	unsigned int indexOffset;
 	unsigned int seqID;
@@ -1069,7 +1069,7 @@ void Cluster::clusterWithMismatches(char sBuf[], char sQVBuf[])
 
 void Cluster::clusterWithShifts(char sBuf[], char sQVBuf[])
 {
-	char tBuf[200], buf[200], tQVBuf[200], QVBuf[200];
+	char tBuf[1000], buf[1000], tQVBuf[1000], QVBuf[1000];
 	int no, i, lShift, rShift, realSize, indexNext, tagReverse;
 	unsigned int indexOffset;
 	unsigned int seqID;
@@ -1326,20 +1326,20 @@ FastqGenerator::FastqGenerator(char input[], char output[], int num)
 void FastqGenerator::record()
 {
 	long i;
-	char buf[201];
+	char buf[1001];
 
 	if(addiIn.is_open())
 	{
 		while(addiIn.good())
 		{
-			addiIn.getline(buf, 201);
+			addiIn.getline(buf, 1001);
 			if(buf[0] == 0)
 				break;
 			for(i = 1; i < addiIn.gcount() - 1; i ++)
 				buf[i - 1] = buf[i];
 			buf[i - 1] = '\0';
 			seq[atoi(buf)] = 1;
-			addiIn.getline(buf, 201);
+			addiIn.getline(buf, 1001);
 		}
 	}
 	else
@@ -1356,14 +1356,14 @@ void FastqGenerator::record()
 void FastqGenerator::generateFastq()
 {
 	unsigned long seqID, i;
-	char buf[201];
+	char buf[1001];
 
 	record();
 	if(in.is_open())
 	{
 		for(seqID = 0; seqID < num * 4; seqID ++)
 		{
-			in.getline(buf, 201);
+			in.getline(buf, 1001);
 			if(seq[seqID / 4])
 			{
 				for(i = 0; i < in.gcount() - 1; i ++)
@@ -1412,7 +1412,7 @@ void Sorter::sort()
 	char * seqs;
 	Order * order;
 	int i, j, seqID = 0, tag = 1, localNum = 0;
-	char buf[201];
+	char buf[1001];
 
 	seqs = new char [(long int)num * lowerSizeInChar * 2];//2 means both bases and QVs
 	order = new Order [num];
@@ -1422,7 +1422,7 @@ void Sorter::sort()
 cont:
 		while(in.good())
 		{
-			in.getline(buf, 201);
+			in.getline(buf, 1001);
 			if(seqID % 4 == 1)
 				for(i = 0; i < lowerSizeInChar; i ++)
 				{
@@ -1638,7 +1638,7 @@ bool within(int p, int pos[], int size)
 void introduceMismatches(char sBuf[], char buf[], int mismatch, int size)
 {
 	int i, j;
-	int pos[200], mBuf[200] = {0};
+	int pos[1000], mBuf[1000] = {0};
 
 	for(i = 0; i < mismatch; i ++)
 	{
@@ -1689,8 +1689,8 @@ void generateClusteredSeq(int num, int lower, int upper, int mismatchAllowed, in
 {
 	ofstream out;
 	int size, mismatch, shift, i, j, k;
-	char s[200], sBuf[200], mismatchBuf[200], shiftBuf[200], buf[200];
-	int mBuf[200] = {0};
+	char s[1000], sBuf[1000], mismatchBuf[1000], shiftBuf[1000], buf[1000];
+	int mBuf[1000] = {0};
 
 #ifdef WITHSIMILARITY
 	if(distance < 2) 
@@ -1698,7 +1698,7 @@ void generateClusteredSeq(int num, int lower, int upper, int mismatchAllowed, in
 		cout << "incorrect distance" << endl;
 		return;
 	}
-	for(i = 0; i < 200; i ++)
+	for(i = 0; i < 1000; i ++)
 		s[i] = change((char)(rand() % 4));
 #endif
 	out.open("input.txt");
@@ -1708,7 +1708,7 @@ void generateClusteredSeq(int num, int lower, int upper, int mismatchAllowed, in
 #ifdef WITHSIMILARITY
 		generateCenter(s, sBuf, distance, mBuf);
 #else
-		for(i = 0; i < 200; i ++)
+		for(i = 0; i < 1000; i ++)
 			sBuf[i] = change((char)(rand() % 4));
 #endif
 		for(i = 0; i < num / correctCluster; i ++)
@@ -1930,7 +1930,7 @@ int main(int argc, char * argv[])
 	else
 		cout << "#mismatch = " << mismatch << "; #shift = " << shift << endl;
 
-//	generateClusteredSeq(10000, 195, 200, 3, 3, 100);
+	generateClusteredSeq(10000, 495, 500, 3, 3, 100);
 
 	FileAnalyzer fa;
 	start = time(NULL);
@@ -1959,9 +1959,9 @@ int main(int argc, char * argv[])
 		cout << "INVALID READ LENGTH (BELOW 21) IN SHORT MODE!" << endl;
 		return 0;
 	}
-	if(upper > 200)
+	if(upper > 1000)
 	{
-		cout << "INVALID READ LENGTH (ABOVE 200)!" << endl;
+		cout << "INVALID READ LENGTH (ABOVE 1000)!" << endl;
 		return 0;
 	}
 	if(upper - lower > 5)
