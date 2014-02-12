@@ -1930,7 +1930,7 @@ int main(int argc, char * argv[])
 	else
 		cout << "#mismatch = " << mismatch << "; #shift = " << shift << endl;
 
-	generateClusteredSeq(10000, 495, 500, 3, 3, 100);
+//	generateClusteredSeq(10000, 495, 500, 3, 3, 100);
 
 	FileAnalyzer fa;
 	start = time(NULL);
