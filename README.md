@@ -36,7 +36,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
 4. Using SEED
 
    ```
-   SEED --input input.fastq --output output.txt [--mismatch M] [--shift S] [--QV1 L] [--QV2 U] [--fast/short] [--reverse]
+   SEED --input input.fastq --output output.txt [--mismatch M] [--shift S] [--QV1 L] [--QV2 U] [--fast/short] [--reverse] [--input2 input2.fastq]
    ```
 
    --mismatch is the maximum number of mismatches allowed from the center sequence in each cluster (0 - 3, default 3).  
@@ -46,6 +46,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
    --fast uses a bigger spaced seed weight to save running time. It is only applicable for sequences longer than 58 bp and may need more memory.  
    --short is to use a smaller spaced seeds weight for sequences as short as 21 bp. This setting often results in longer compute times.  
    -- reverse is to co-cluster sequences in sense and anti-sense orientation (reverse and complement).
+   --input2 specifies the paired sequences so that paired-end library can be clustered. In current implementation, no shift is allowed for this option, and if --reverse option is specified minimum sequence lengths of both pairs should be the same.
 
 5. Output
 

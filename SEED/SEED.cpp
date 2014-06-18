@@ -22,6 +22,7 @@ using namespace std;
 
 int QV = 0;
 int reversed = 0;
+int paired = 0;
 int seedsCount = 10;
 int seedsWeight = 16 * 1024;
 
@@ -108,6 +109,7 @@ class FastqGenerator
 	char * seq;
 public:
 	FastqGenerator(char [], char [], int);
+	FastqGenerator(char [], char [], int, int);
 	void record();
 	void generateFastq();
 };
@@ -158,6 +160,7 @@ class FileAnalyzer
 public:
 	void inputAnalyze(char [], int &, int &, int &, int &);
 	void outputAnalyze(int, int);
+	void PECombine(char [], int, char [], int, char *, int &, int &, int &);
 };
 
 class Sorter
@@ -771,25 +774,69 @@ void Cluster::calConsensus(char sBuf[], unsigned int sSeqID, int & tagReverse)
 //if the virtual center and the center are too far
 	if(compare(sBuf, buf, 0, lowerSizeInChar, tagReverse) <= mismatchAllowed)
 	{
-		addiOut << ">" << mappingTable[centerSeqID][0] << endl;
-		for(i = 0; i < lowerSizeInChar; i ++)
+		if(paired == 0)
 		{
-			out << h->changeBack(buf[i]);
-			addiOut << h->changeBack(buf[i]);
+			addiOut << ">" << mappingTable[centerSeqID][0] << endl;
+			for(i = 0; i < lowerSizeInChar; i ++)
+			{
+				out << h->changeBack(buf[i]);
+				addiOut << h->changeBack(buf[i]);
+			}
+			out << endl;
+			addiOut << endl;
 		}
-		out << endl;
-		addiOut << endl;
+		else
+		{
+			addiOut << ">" << mappingTable[centerSeqID][0] << endl;
+			for(i = 0; i < paired; i ++)//paired == lower
+			{
+				out << h->changeBack(buf[i]);
+				addiOut << h->changeBack(buf[i]);
+			}
+			out << endl;
+			addiOut << endl;
+			addiOut << ">" << mappingTable[centerSeqID][0] << endl;
+			for(; i < lowerSizeInChar; i ++)
+			{
+				out << h->changeBack(buf[i]);
+				addiOut << h->changeBack(buf[i]);
+			}
+			out << endl;
+			addiOut << endl;
+		}
 	}
 	else
 	{
-		addiOut << ">" << mappingTable[sSeqID][0] << endl;
-		for(i = 0; i < lowerSizeInChar; i ++)
+		if(paired == 0)
 		{
-			out << h->changeBack(sBufBak[i]); //out << h->changeBack(sBuf[i]);
-			addiOut << h->changeBack(sBufBak[i]); //addiOut << h->changeBack(sBuf[i]);
+			addiOut << ">" << mappingTable[sSeqID][0] << endl;
+			for(i = 0; i < lowerSizeInChar; i ++)
+			{
+				out << h->changeBack(sBufBak[i]); //out << h->changeBack(sBuf[i]);
+				addiOut << h->changeBack(sBufBak[i]); //addiOut << h->changeBack(sBuf[i]);
+			}
+			out << endl;
+			addiOut << endl;
 		}
-		out << endl;
-		addiOut << endl;
+		else
+		{
+			addiOut << ">" << mappingTable[sSeqID][0] << endl;
+			for(i = 0; i < paired; i ++)//paired == lower
+			{
+				out << h->changeBack(sBufBak[i]);
+				addiOut << h->changeBack(sBufBak[i]);
+			}
+			out << endl;
+			addiOut << endl;
+			addiOut << ">" << mappingTable[sSeqID][0] << endl;
+			for(; i < lowerSizeInChar; i ++)
+			{
+				out << h->changeBack(sBufBak[i]);
+				addiOut << h->changeBack(sBufBak[i]);
+			}
+			out << endl;
+			addiOut << endl;
+		}
 //still need to decide if the source sequence is reverse complementary to the virtual center
 		compare(sBuf, sBufBak, 0, lowerSizeInChar, tagReverse);
 	}
@@ -1306,7 +1353,81 @@ conti:
 	tNum = seqID;
 }
 
+void FileAnalyzer::PECombine(char input1[], int lower1, char input2[], int lower2, 
+char * input, int & num, int & lower, int & upper)
+{
+	ifstream in1, in2;
+	ofstream out;
+	char buf1[1000], buf2[1000];
+	int seqID = 0, i, NBase;
+
+	in1.open(input1);
+	in2.open(input2);
+	out.open("combined.fastq");
+
+	strcpy(input, "combined.fastq");
+	num = 0;
+	lower = 1000;
+	upper = 0;
+
+	if(in1.is_open() && in2.is_open())
+	{
+		while(in1.good() && in2.good())
+		{
+			in1.getline(buf1, 1000);
+			in2.getline(buf2, 1000);
+			if(buf1[0] == 0 || buf2[0] == 0) break;
+
+			if(seqID % 4 == 0)
+				out << "@" << seqID / 4 << endl;
+			else if(seqID % 4 == 2)
+				out << "+" << seqID / 4 << endl;
+			else
+			{
+				NBase = 0;
+				for(i = 0; i < lower1; i ++)
+				{
+					out << buf1[i];
+					if(buf1[i] == 'N') NBase = 1;
+				}
+				for(i = 0; i < lower2; i ++)
+				{
+					out << buf2[i];
+					if(buf2[i] == 'N') NBase = 1;
+				}
+				out << endl;
+				if(NBase == 0) num ++;
+				if(in1.gcount() - 1 + in2.gcount() - 1 < lower) lower = in1.gcount() - 1 + in2.gcount() - 1;
+				if(in1.gcount() - 1 + in2.gcount() - 1 > upper) upper = in1.gcount() - 1 + in2.gcount() - 1;
+			}
+			seqID ++;
+		}
+	}
+	else
+	{
+		cout << "CANNOT OPEN INPUT FILE!" << endl;
+		exit(-1);
+	}
+}
+
 FastqGenerator::FastqGenerator(char input[], char output[], int num)
+{
+        long i;
+
+        in.open(input);
+        strcpy(addiInput, output);
+        strcat(addiInput, ".fasta");
+        addiIn.open(addiInput);
+        strcpy(outputq, output);
+        strcat(outputq, ".fastq");
+        out.open(outputq);
+        this->num = num;
+        seq = new char [num];
+        for(i = 0; i < num; i ++)
+                seq[i] = 0;
+}
+
+FastqGenerator::FastqGenerator(char input[], char output[], int num, int pair)
 {
 	long i;
 
@@ -1315,6 +1436,8 @@ FastqGenerator::FastqGenerator(char input[], char output[], int num)
 	strcat(addiInput, ".fasta");
 	addiIn.open(addiInput);
 	strcpy(outputq, output);
+	strcat(outputq, "."); 
+	if(pair == 1) strcat(outputq, "1"); else strcat(outputq, "2");
 	strcat(outputq, ".fastq");
 	out.open(outputq);
 	this->num = num;
@@ -1767,7 +1890,7 @@ void itoa(char buf[], unsigned int v)
 
 void print()
 {
-	cout << "SEED --input input.fastq --output output.txt [--mismatch M] [--shift S] [--QV1 L] [--QV2 U] [--fast/short] [--reverse]" << endl;
+	cout << "SEED --input input.fastq --output output.txt [--mismatch M] [--shift S] [--QV1 L] [--QV2 U] [--fast/short] [--reverse] [--input2 input2.fastq]" << endl;
 	cout << "--mismatch is the maximum number of mismatches allowed from the center sequence in each cluster (0 - 3, default 3)" << endl;
 	cout << "--shift is the maximum number of shifts allowed from the center sequence in each cluster (0 - 6, default 3)" << endl;
 	cout << "--QV1 is the threshold for the base call quality values (QV) that are provided in the FASTQ files as Phred scores. SEED ignores those mismatches where the sum of the Phred scores of the mismatching bases is lower than the specified QV1 threshold value (0 - 2 * 93). The default value for QV1 is 0" << endl;
@@ -1775,15 +1898,16 @@ void print()
 	cout << "--fast uses a bigger spaced seed weight to save running time. It is only applicable for sequences longer than 58 bp and may need more memory" << endl;
 	cout << "--short is to use a smaller spaced seeds weight for sequences as short as 21 bp. This setting often results in longer compute times" << endl;
 	cout << "--reverse is to co-cluster sequences in sense and anti-sense orientation (reverse and complement)" << endl;
+	cout << "--input2 specifies the paired sequences so that paired-end library can be clustered. In current implementation, no shift is allowed for this option, and if --reverse option is specified minimum sequence lengths of both pairs should be the same" << endl;
 }
 
 int main(int argc, char * argv[])
 {
 	time_t start, end;
-	int num, tNum, lower, upper, mismatch = 3, shift = 3, lowerQV = 0, upperQV = 6 * 93, i, tagMismatch = 0, tagShift = 0, tagInput = 0, tagOutput = 0, tagFast = 0, tagShort = 0, tagReverse = 0;
+	int num, num1, num2, tNum, tNum1, tNum2, lower, lower1, lower2, upper, upper1, upper2, mismatch = 3, shift = 3, lowerQV = 0, upperQV = 6 * 93, i, tagMismatch = 0, tagShift = 0, tagInput = 0, tagInput2 = 0, tagOutput = 0, tagFast = 0, tagShort = 0, tagReverse = 0;
 	int tagQV1 = 0, tagQV2 = 0;
-	char buf[5], input[100], output[100], midOutput[100];
-	ifstream in;
+	char buf[5], input[100], input1[100], input2[100], output[100], midOutput[100];
+	ifstream in, in2;
 	int io = 0;
 	int totalLength, count, j;
 
@@ -1806,6 +1930,25 @@ int main(int argc, char * argv[])
 			strcpy(input, argv[i]);
 			tagInput = 1;
 		}
+                else if(strcmp(argv[i], "--input2") == 0)
+                {
+                        if(tagInput2 == 1 || i == argc - 1)
+                        {
+                                print();
+                                return 0;
+                        }
+                        in2.open(argv[++ i]);
+                        if(!in2.is_open())
+                        {
+                                cout << "CANNOT OPEN PAIRED INPUT FILE!" << endl;
+                                print();
+                                return 0;
+                        }
+                        in2.close();
+                        strcpy(input2, argv[i]);
+                        tagInput2 = 1;
+			paired = 1;
+                }
 		else if(strcmp(argv[i], "--output") == 0)
 		{
 			if(tagOutput == 1 || i == argc - 1)
@@ -1930,44 +2073,121 @@ int main(int argc, char * argv[])
 	else
 		cout << "#mismatch = " << mismatch << "; #shift = " << shift << endl;
 
-//	generateClusteredSeq(10000, 495, 500, 3, 3, 100);
+//	generateClusteredSeq(1000, 95, 100, 0, 0, 100);
+//	return 0;
 
 	FileAnalyzer fa;
 	start = time(NULL);
-	fa.inputAnalyze(input, num, tNum, lower, upper);
-	cout << "(1) input analysis finished" << endl;
+	if(paired == 0)
+	{
+		fa.inputAnalyze(input, num, tNum, lower, upper);
 
-	cout << " - " << num << " seqs with lengths between " << lower << " and " << upper << endl;
+		cout << "(1) input analysis finished" << endl;
+		cout << " - " << num << " valid seqs with lengths between " << lower << " and " << upper << endl;
 
-	if(num == 0)
-	{
-		cout << "INVALID FILE FORMAT!" << endl;
-		return 0;
+		if(num == 0)
+		{
+			cout << "INSUFFICIENT VALID READS!" << endl;
+			return 0;
+		}
+		if(upper - lower > 5)
+		{
+			cout << "INVALID READ LENGTH DIFFERENCE (ABOVE 5)!" << endl;
+			return 0;
+		}
+		if(lower < 36 && seedsWeight == 1024 * 16)
+		{
+			cout << "INVALID READ LENGTH (BELOW 36) IN ORDINARY MODE!" << endl;
+			return 0;
+		}
+		if(lower < 58 && seedsWeight == 1024 * 64)
+		{
+			cout << "INVALID READ LENGTH (BELOW 58) IN FAST MODE!" << endl;
+			return 0;
+		}
+		if(lower < 21 && seedsWeight == 4)
+		{
+			cout << "INVALID READ LENGTH (BELOW 21) IN SHORT MODE!" << endl;
+			return 0;
+		}
+		if(upper > 1000)
+		{
+			cout << "INVALID READ LENGTH (ABOVE 1000)!" << endl;
+			return 0;
+		}
 	}
-	if(lower < 36 && seedsWeight == 1024 * 16)
+	else
 	{
-		cout << "INVALID READ LENGTH (BELOW 36) IN ORDINARY MODE!" << endl;
-		return 0;
-	}
-	if(lower < 58 && seedsWeight == 1024 * 64)
-	{
-		cout << "INVALID READ LENGTH (BELOW 58) IN FAST MODE!" << endl;
-		return 0;
-	}
-	if(lower < 21 && seedsWeight == 4)
-	{
-		cout << "INVALID READ LENGTH (BELOW 21) IN SHORT MODE!" << endl;
-		return 0;
-	}
-	if(upper > 1000)
-	{
-		cout << "INVALID READ LENGTH (ABOVE 1000)!" << endl;
-		return 0;
-	}
-	if(upper - lower > 5)
-	{
-		cout << "INVALID READ LENGTH DIFFERENCE (ABOVE 5)!" << endl;
-		return 0;
+		strcpy(input1, input);
+		fa.inputAnalyze(input1, num1, tNum1, lower1, upper1);
+		paired = lower1;//keep lower1 in paired to separate read pairs
+		fa.inputAnalyze(input2, num2, tNum2, lower2, upper2);
+		fa.PECombine(input1, lower1, input2, lower2, input, num, lower, upper);
+		//combine both pairs and trim to keep reads in the same pair same length
+
+		cout << "(1) input analysis finished" << endl;
+//		cout << " - " << num1 << " valid seqs with lengths between " << lower1 << " and " << upper1 << " in left pair" << endl;
+//		cout << " - " << num2 << " valid seqs with lengths between " << lower2 << " and " << upper2 << " in right pair" << endl;
+		cout << " - " << num << " valid seqs with combined lengths between " << lower << " and " << upper << endl;
+
+		if(num1 == 0)
+		{
+			cout << "INSUFFICIENT VALID READS IN LEFT PAIR!" << endl;
+			return 0;
+		}
+		if(num2 == 0)
+		{
+			cout << "INSUFFICIENT VALID READS IN RIGHT PAIR!" << endl;
+			return 0;
+		}
+		if(tNum1 != tNum2)
+		{
+			cout << "DIFFERENT NUMBER OF READS IN LEFT AND RIGHT PAIRS!" << endl;
+			return 0;
+		}
+		if(upper1 - lower1 > 5)
+		{
+			cout << "INVALID READ LENGTH DIFFERENCE (ABOVE 5) IN LEFT PAIR!" << endl;
+			return 0;
+		}
+		if(upper2 - lower2 > 5)
+		{
+			cout << "INVALID READ LENGTH DIFFERENCE (ABOVE 5) IN RIGHT PAIR!" << endl;
+			return 0;
+		}
+		if(lower < 36 && seedsWeight == 1024 * 16)
+        	{
+			cout << "INVALID COMBINED READ LENGTH (BELOW 36) IN ORDINARY MODE!" << endl;
+			return 0;
+		}
+		if(lower < 58 && seedsWeight == 1024 * 64)
+		{
+			cout << "INVALID COMBINED READ LENGTH (BELOW 58) IN FAST MODE!" << endl;
+			return 0;
+		}
+		if(lower < 21 && seedsWeight == 4)
+		{
+			cout << "INVALID COMBINED READ LENGTH (BELOW 21) IN SHORT MODE!" << endl;
+			return 0;
+		}
+		if(upper > 1000)
+		{
+			cout << "INVALID COMBINED READ LENGTH (ABOVE 1000)!" << endl;
+			return 0;
+		}
+
+		if(shift > 0)
+		{
+			cout << "In current implementation, #shift must be 0 for paired-end clustering. Please wait for SEED2 to solve this issue." << endl;
+			return 0;
+		}
+		if(reversed == 1 && lower1 != lower2)
+		{
+			cout << "In current implementation, if reverse complementary is considered in clustering, lower bounds of both pairs should be the same. Please wait for SEED2 to solve this issue." << endl;
+			return 0;
+		}
+
+		upper = lower;
 	}
 
 //	produce realNum, mappingTable and mappingNum here, and the intermediate file is produced/opened by protocol
@@ -1982,10 +2202,20 @@ int main(int argc, char * argv[])
 	end = time(NULL);
 	cout << "(4) clustering finished" << endl;
 
-	FastqGenerator f(input, output, tNum);
-	f.generateFastq();
+	if(paired == 0)
+	{
+		FastqGenerator f(input, output, tNum);
+		f.generateFastq();
+	}
+	else
+	{
+		FastqGenerator f1(input1, output, tNum1, 1);
+		f1.generateFastq();
+		FastqGenerator f2(input2, output, tNum2, 2);
+		f2.generateFastq();
+	}
 	cout << "(5) fastq file generated" << endl;
-	
+
 	cout << " - " << end - start << " seconds" << endl;
 
 	return 1;
