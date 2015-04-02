@@ -147,6 +147,7 @@ public:
 	char max(int, int, int, int);
 	void clusterByConsensus();
 	void calConsensus(char [], unsigned int, int &);
+	void calConsensus(char [], char [], unsigned int, int &);
 	void preprocess();
 	Cluster(char [], char [], int, int, int, int, int, int, int, unsigned int **, unsigned int *);
 	int compare(char [], char [], char [], char [], int, int, int &);
@@ -772,7 +773,7 @@ void Cluster::calConsensus(char sBuf[], unsigned int sSeqID, int & tagReverse)
 		}
 	}
 //if the virtual center and the center are too far
-	if(compare(sBuf, buf, 0, lowerSizeInChar, tagReverse) <= mismatchAllowed)
+	if(compare(sBuf, buf, 0, lowerSizeInChar, tagReverse) <= mismatchAllowed)// bug exists here: the same center sequence is found for many clusters since the center sequence is not deleted
 	{
 		if(paired == 0)
 		{
@@ -842,6 +843,153 @@ void Cluster::calConsensus(char sBuf[], unsigned int sSeqID, int & tagReverse)
 	}
 }
 
+void Cluster::calConsensus(char sBuf[], char sQVBuf[], unsigned int sSeqID, int & tagReverse)
+{
+        long int A[1000] = {0}, C[1000] = {0}, G[1000] = {0}, T[1000] = {0}, QV[1000] = {0};
+        int indexNext, no, i, realSize, similarity = 1000, diff, j;
+        char sBufBak[1000], tBuf[1000], tQVBuf[1000], buf[1000], QVBuf[1000];
+        unsigned int indexOffset;
+        unsigned int seqID, centerSeqID;
+
+        for(indexNext = 0; indexNext < seedsCount; indexNext ++)
+        {
+                indexOffset = h->calOffset(indexNext, sBuf);
+                for(no = 0; no < h->getOffsetCount(indexOffset, indexNext); no ++)
+                {
+                        realSize = h->searchByIndex(indexNext, indexOffset, no, tBuf, tQVBuf, seqID);
+                        if(realSize > 0 && compare(sBuf, sQVBuf, tBuf, tQVBuf, 0, lowerSizeInChar, tagReverse) <= mismatchAllowed * 2)
+                        {
+                                if(reversed && tagReverse)
+                                        for(i = 0, j = lowerSizeInChar - 1; i < lowerSizeInChar; i ++, j --)
+					{
+                                                switch(tBuf[j])
+                                                {
+                                                        case 0x00: T[i] = T[i] + mappingNum[seqID]; break;
+                                                        case 0x01: G[i] = G[i] + mappingNum[seqID]; break;
+                                                        case 0x02: C[i] = C[i] + mappingNum[seqID]; break;
+                                                        case 0x03: A[i] = A[i] + mappingNum[seqID]; break;
+                                                        default: cout << "MEMORY ERROR!" << endl; exit(-1);
+                                                }
+						QV[i] = QV[i] + mappingNum[seqID] * tQVBuf[j];
+					}
+                                else
+                                        for(i = 0; i < lowerSizeInChar; i ++)
+					{
+                                                switch(tBuf[i])
+                                                {
+                                                        case 0x00: A[i] = A[i] + mappingNum[seqID]; break;
+                                                        case 0x01: C[i] = C[i] + mappingNum[seqID]; break;
+                                                        case 0x02: G[i] = G[i] + mappingNum[seqID]; break;
+                                                        case 0x03: T[i] = T[i] + mappingNum[seqID]; break;
+                                                        default: cout << "MEMORY ERROR!" << endl; exit(-1);
+                                                }
+						QV[i] = QV[i] + mappingNum[seqID] * tQVBuf[i];
+					}
+                                h->tmpDeleteByIndex(indexNext, indexOffset, no);
+                        }
+                }
+        }
+        for(i = 0; i < lowerSizeInChar; i ++)
+        {
+                sBufBak[i] = sBuf[i];
+                sBuf[i] = max(A[i], C[i], G[i], T[i]);
+		sQVBuf[i] = QV[i] / (A[i] + C[i] + G[i] + T[i]);
+        }
+//find the most similar seq to the consensus and write to the output
+        for(indexNext = 0; indexNext < seedsCount; indexNext ++)
+        {
+                indexOffset = h->calOffset(indexNext, sBufBak);
+                for(no = 0; no < h->getOffsetCount(indexOffset, indexNext); no ++)
+                {
+                        realSize = h->searchByIndex(indexNext, indexOffset, no, tBuf, tQVBuf, seqID);
+                        if(realSize < 0)
+                        {
+                                h->recoverByIndex(indexNext, indexOffset, no);
+                                diff = compare(sBuf, sQVBuf, tBuf, tQVBuf, 0, lowerSizeInChar, tagReverse);
+                                if(diff < similarity)
+                                {
+                                        similarity = diff;
+                                        for(i = 0; i < lowerSizeInChar; i ++)
+					{
+                                                buf[i] = tBuf[i];
+						QVBuf[i] = tQVBuf[i];
+					}
+                                        centerSeqID = seqID;
+                                }
+                        }
+                }
+        }
+//if the virtual center and the center are too far
+        if(compare(sBuf, sQVBuf, buf, QVBuf, 0, lowerSizeInChar, tagReverse) <= mismatchAllowed)
+        {
+                if(paired == 0)
+                {
+                        addiOut << ">" << mappingTable[centerSeqID][0] << endl;
+                        for(i = 0; i < lowerSizeInChar; i ++)
+                        {
+                                out << h->changeBack(buf[i]);
+                                addiOut << h->changeBack(buf[i]);
+                        }
+                        out << endl;
+                        addiOut << endl;
+                }
+                else
+                {
+                        addiOut << ">" << mappingTable[centerSeqID][0] << endl;
+                        for(i = 0; i < paired; i ++)//paired == lower
+                        {
+                                out << h->changeBack(buf[i]);
+                                addiOut << h->changeBack(buf[i]);
+                        }
+                        out << endl;
+                        addiOut << endl;
+                        addiOut << ">" << mappingTable[centerSeqID][0] << endl;
+                        for(; i < lowerSizeInChar; i ++)
+                        {
+                                out << h->changeBack(buf[i]);
+                                addiOut << h->changeBack(buf[i]);
+                        }
+                        out << endl;
+                        addiOut << endl;
+                }
+        }
+        else
+        {
+                if(paired == 0)
+                {
+                        addiOut << ">" << mappingTable[sSeqID][0] << endl;
+                        for(i = 0; i < lowerSizeInChar; i ++)
+                        {
+                                out << h->changeBack(sBufBak[i]); //out << h->changeBack(sBuf[i]);
+                                addiOut << h->changeBack(sBufBak[i]); //addiOut << h->changeBack(sBuf[i]);
+                        }
+                        out << endl;
+                        addiOut << endl;
+                }
+                else
+                {
+                        addiOut << ">" << mappingTable[sSeqID][0] << endl;
+                        for(i = 0; i < paired; i ++)//paired == lower
+                        {
+                                out << h->changeBack(sBufBak[i]);
+                                addiOut << h->changeBack(sBufBak[i]);
+                        }
+                        out << endl;
+                        addiOut << endl;
+                        addiOut << ">" << mappingTable[sSeqID][0] << endl;
+                        for(; i < lowerSizeInChar; i ++)
+                        {
+                                out << h->changeBack(sBufBak[i]);
+                                addiOut << h->changeBack(sBufBak[i]);
+                        }
+                        out << endl;
+                        addiOut << endl;
+                }
+//still need to decide if the source sequence is reverse complementary to the virtual center
+                compare(sBuf, sBufBak, 0, lowerSizeInChar, tagReverse);
+        }
+}
+
 void Cluster::cluster()
 {
 	char sBuf[1000];
@@ -858,7 +1006,7 @@ void Cluster::cluster()
 			realSize = h->searchBySeq(seqOffset, sBuf, sQVBuf, seqID);
 			if(realSize == 0) continue;
 			else realSize = 0;
-			calConsensus(sBuf, seqID, tagReverse);
+			calConsensus(sBuf, sQVBuf, seqID, tagReverse);
 			if(out.is_open())
 				if(reversed)
 					for(i = 0; i < mappingNum[seqID]; i ++)
@@ -880,8 +1028,10 @@ void Cluster::cluster()
 			}
 //forcefully write this seq to avoid lost of it
 //			numInCL = 1;
+
 			clusterWithMismatches(sBuf, sQVBuf);
 			clusterWithShifts(sBuf, sQVBuf);
+
 //			if(numInCL > 100)
 //			{
 //				dis << CLID << " " << numInCL << endl;
@@ -2192,7 +2342,7 @@ int main(int argc, char * argv[])
 
 //	produce realNum, mappingTable and mappingNum here, and the intermediate file is produced/opened by protocol
 	Sorter s(input, num, lower);
-	s.sort();
+	s.sort();// if seqs x and y are the same but with differnt QVs, then y's QV will be represented by x's QV and not be considered in clustering
 	cout << "(2) sorting finished" << endl;
 
 	Cluster c(input, output, s.getRealNum(), lower, upper, mismatch, shift, lowerQV, upperQV, s.getMappingTable(), s.getMappingNum());

@@ -45,7 +45,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
    --QV2 is another QV threshold. It prevents co-clustering of sequences where the sum of all mismatched positions is higher than the threshold value (0 - 6 * 93). The default value for QV2 is 6 * 93.  
    --fast uses a bigger spaced seed weight to save running time. It is only applicable for sequences longer than 58 bp and may need more memory.  
    --short is to use a smaller spaced seeds weight for sequences as short as 21 bp. This setting often results in longer compute times.  
-   -- reverse is to co-cluster sequences in sense and anti-sense orientation (reverse and complement).
+   -- reverse is to co-cluster sequences in sense and anti-sense orientation (reverse and complement).  
    --input2 specifies the paired sequences so that paired-end library can be clustered. In current implementation, no shift is allowed for this option, and if --reverse option is specified minimum sequence lengths of both pairs should be the same.
 
 5. Output
