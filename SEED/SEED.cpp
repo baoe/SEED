@@ -385,7 +385,7 @@ void Hash::seqInsert(char buf[], int realSize, char * seqHead, unsigned int seqO
 	int i, seqNext;
 	char bitBuf = 0x00;
 
-	*(seqHead + seqOffset) = (char)realSize;
+	*(seqHead + seqOffset) = 0x01;// the first byte was intended to record size of the seq, but is now used for existence of the seq. If it is changed for the recording purpose in the future, more bytes would be required.
 	*(seqHead + seqOffset + 1) = (char) ((seqID & 0xff000000) >> 24);
 	*(seqHead + seqOffset + 2) = (char) ((seqID & 0x00ff0000) >> 16);
 	*(seqHead + seqOffset + 3) = (char) ((seqID & 0x0000ff00) >> 8);
