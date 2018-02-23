@@ -1,23 +1,13 @@
-##### Contents
-[Overview] (#overview)  
-[Copy right] (#copyright)  
-[How to cite SEED?] (#cite)  
-[Short Manual] (#manual)  
-
-<a name="overview"/>
 ### Overview
 SEED is a software for clustering large sets of Next Generation Sequences (NGS) with hundreds of millions of reads in a time and memory efficient manner. Its algorithm joins highly similar sequences into clusters that can differ by up to three mismatches and three overhanging residues.
 
-<a name="copyright"/>
 ###Copy right
 SEED is under the [Artistic License 2.0](http://opensource.org/licenses/Artistic-2.0).
 
-<a name="cite"/>
 ### How to cite SEED?
 If you use SEED, please cite the following paper:  
 Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next Generation Sequences. Bioinformatics: [epub](http://www.hubmed.org/display.cgi?uids=21810899).
 
-<a name="manual"/>
 ### Short manual
 1. System requirements
 
@@ -31,7 +21,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
 
 3. Input
 
-   Only FASTQ format is supported in the current version. The sequence length should be between 21 bp and 100 bp with the max variation of 5 bp.
+   Only FASTQ format is supported in the current version. The sequence length should be between 21 bp and 1000 bp with the max variation of 5 bp.
 
 4. Using SEED
 
@@ -45,7 +35,7 @@ Bao E, Jiang T, Kaloshian I, Girke T (2011) SEED: Efficient Clustering of Next G
    --QV2 is another QV threshold. It prevents co-clustering of sequences where the sum of all mismatched positions is higher than the threshold value (0 - 6 * 93). The default value for QV2 is 6 * 93.  
    --fast uses a bigger spaced seed weight to save running time. It is only applicable for sequences longer than 58 bp and may need more memory.  
    --short is to use a smaller spaced seeds weight for sequences as short as 21 bp. This setting often results in longer compute times.  
-   -- reverse is to co-cluster sequences in sense and anti-sense orientation (reverse and complement).  
+   --reverse is to co-cluster sequences in sense and anti-sense orientation (reverse and complement).  
    --input2 specifies the paired sequences so that paired-end library can be clustered. In current implementation, no shift is allowed for this option, and if --reverse option is specified minimum sequence lengths of both pairs should be the same.
 
 5. Output
