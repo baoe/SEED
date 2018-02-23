@@ -1,7 +1,7 @@
 ### Overview
 SEED is a software for clustering large sets of Next Generation Sequences (NGS) with hundreds of millions of reads in a time and memory efficient manner. Its algorithm joins highly similar sequences into clusters that can differ by up to three mismatches and three overhanging residues.
 
-###Copy right
+### Copy right
 SEED is under the [Artistic License 2.0](http://opensource.org/licenses/Artistic-2.0).
 
 ### How to cite SEED?
